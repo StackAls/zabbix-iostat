@@ -1,0 +1,650 @@
+zabbix_export:
+  version: '5.4'
+  date: '2022-08-08T07:47:17Z'
+  groups:
+    -
+      uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+  templates:
+    -
+      uuid: 9e62a3bdf8744f78ae8c3fbb9557956e
+      template: 'Template OS Linux iostat JSON'
+      name: 'Template OS Linux iostat JSON'
+      description: 'UserParameter=iostat.discovery_json, iostat -yxdtс -o JSON'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          uuid: 59f1686496f04051810adb9d8f29dd5f
+          name: 'iostat JSON'
+          key: iostat.json
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          description: 'UserParameter=iostat.discovery_json, iostat -yxdtc -o JSON'
+      discovery_rules:
+        -
+          uuid: c81cfb1489ca469fac24757aac31ff97
+          name: 'iostat Disk discover'
+          type: DEPENDENT
+          key: iostat.disk.discover
+          delay: '0'
+          filter:
+            conditions:
+              -
+                macro: '{#DISK}'
+                value: '^(xvd|sd|hd|vd)[a-z]|(dm-)|(total)'
+                formulaid: A
+          lifetime: 1d
+          item_prototypes:
+            -
+              uuid: 70f8d574f7ac4f76ab1052ab08c294d3
+              name: 'iostat Disk {#DISK} all data'
+              type: DEPENDENT
+              key: 'iostat.disk.all.[{#DISK}]'
+              delay: '0'
+              history: 1d
+              trends: '0'
+              status: DISABLED
+              value_type: TEXT
+              description: '% CPU, затраченный на передачу I/O запросов к диску (“пропускная способность” диска);'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")]'
+              master_item:
+                key: iostat.json
+            -
+              uuid: b1a63507c2404e99bf2de2ed3065372d
+              name: 'iostat Disk {#DISK} average queue length'
+              type: DEPENDENT
+              key: 'iostat.disk.aqu-sz.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              description: 'aqu-sz The average queue length of the requests that were issued to the device. Note: In previous versions, this field was known as avgqu-sz.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - aqu-sz
+                    - aqusz
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].aqusz.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 0779756ed12f43d0bfe1626d1d1f735c
+              name: 'iostat Disk {#DISK} discard average request kB'
+              type: DEPENDENT
+              key: 'iostat.disk.dareq-sz.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'dareq-sz The average size (in kilobytes) of the discard requests that were issued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - dareq-sz
+                    - dareqsz
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].dareqsz.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 8f744f583fbd4aa8b7b43c61c90928ff
+              name: 'iostat Disk {#DISK} discard kB/s'
+              type: DEPENDENT
+              key: 'iostat.disk.dkBs.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'dkB/s The number of kilobytes discarded for the device per second.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].dkBs.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 8f5274e5764c40b3872ca7bf96028249
+              name: 'iostat Disk {#DISK} %discard rqm'
+              type: DEPENDENT
+              key: 'iostat.disk.drqm.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: '%'
+              description: '%drqm  The percentage of discard requests merged together before being sent to the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].drqm.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: ee567081733842efbadc5a3e8a3cc193
+              name: 'iostat Disk {#DISK} discard rqm/s'
+              type: DEPENDENT
+              key: 'iostat.disk.drqms.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: rqm/s
+              description: 'drqm/s The number of discard requests merged per second that were queued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].drqms.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 158c0b0e3a1a4473acc99473c73df4c0
+              name: 'iostat Disk {#DISK} discards/s'
+              type: DEPENDENT
+              key: 'iostat.disk.ds.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: d/s
+              description: 'd/s    The number (after merges) of discard requests completed per second for the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].ds.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: b6bdb1b26f254675a3de8878fbc3562f
+              name: 'iostat Disk {#DISK} discard_await'
+              type: DEPENDENT
+              key: 'iostat.disk.d_await.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: ms
+              description: 'd_await The average time (in milliseconds) for discard requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].d_await.first()'
+                -
+                  type: TRIM
+                  parameters:
+                    - '[]'
+              master_item:
+                key: iostat.json
+            -
+              uuid: e328c365dba3479db51e64058834d208
+              name: 'iostat Disk {#DISK} flushs/s'
+              type: DEPENDENT
+              key: 'iostat.disk.fs.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: f/s
+              description: 'f/s    The number (after merges) of flush requests completed per second for the device.  This counts flush requests executed by disks. Flush requests are not tracked for partitions.  Before being merged, flush operations are counted as writes.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].fs.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: d83b4548d6b545e7a8ae662dab9120ca
+              name: 'iostat Disk {#DISK} flush_await'
+              type: DEPENDENT
+              key: 'iostat.disk.f_await.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: ms
+              description: 'f_await The average time (in milliseconds) for flush requests issued to the device to be served.  The block layer combines flush requests and executes at most one at a time.  Thus flush operations could be twice as long: Wait for current flush request, then execute it, then wait for the next one.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].f_await.first()'
+                -
+                  type: TRIM
+                  parameters:
+                    - '[]'
+              master_item:
+                key: iostat.json
+            -
+              uuid: efc25acc334647ceb940c393a6fe63b1
+              name: 'iostat Disk {#DISK} read average request kB'
+              type: DEPENDENT
+              key: 'iostat.disk.rareq-sz.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'rareq-sz The average size (in kilobytes) of the read requests that were issued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - rareq-sz
+                    - rareqsz
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].rareqsz.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 81bedcd394514fec857a7b85344fc167
+              name: 'iostat Disk {#DISK} read kB/s'
+              type: DEPENDENT
+              key: 'iostat.disk.rkBs.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'rkB/s The number of kilobytes read from the device per second.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].rkBs.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 21bdbdd428404a038c8fefa3e9dc1a9b
+              name: 'iostat Disk {#DISK} %read rqm'
+              type: DEPENDENT
+              key: 'iostat.disk.rrqm.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: '%'
+              description: '%rrqm  The percentage of read requests merged together before being sent to the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].rrqm.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 8f2e7cdadf78452e8ae718ac8b9d3a5f
+              name: 'iostat Disk {#DISK} read rqm/s'
+              type: DEPENDENT
+              key: 'iostat.disk.rrqms.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: rqm/s
+              description: 'rrqm/s The number of read requests merged per second that were queued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].rrqms.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 21978a05ba444618b62b028682ecd50c
+              name: 'iostat Disk {#DISK} reads/s'
+              type: DEPENDENT
+              key: 'iostat.disk.rs.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: r/s
+              description: "w/s\tколичество запросов на запись в секунду"
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].rs.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 0a8b7d40af28480ea98cf79fad48151c
+              name: 'iostat Disk {#DISK} read_await'
+              type: DEPENDENT
+              key: 'iostat.disk.r_await.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: ms
+              description: 'среднее время (милисекунды) на обработку запросов чтения к диску (включает в себя время, потраченное в очереди на обработку и время на обработку запроса);'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].r_await.first()'
+                -
+                  type: TRIM
+                  parameters:
+                    - '[]'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 3b91a1e6880d4cf489c82b0b95052c9d
+              name: 'iostat Disk {#DISK} %utilisation'
+              type: DEPENDENT
+              key: 'iostat.disk.util.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: '%'
+              description: '%util  Percentage of elapsed time during which I/O requests were issued to the device (bandwidth utilization for the device). Device saturation occurs when this value is close to 100% for devices serving requests serially.  But for devices serving requests in parallel, such as RAID arrays and modern SSDs, this number does not reflect their performance limits.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].util.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 463ad773908046e5b5a300f153d19d40
+              name: 'iostat Disk {#DISK} write average request kB'
+              type: DEPENDENT
+              key: 'iostat.disk.wareq-sz.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'wareq-sz The average size (in kilobytes) of the write requests that were issued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - wareq-sz
+                    - wareqsz
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].wareqsz.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 62e672e0b0a0478597f145573ed30d2d
+              name: 'iostat Disk {#DISK} write kB/s'
+              type: DEPENDENT
+              key: 'iostat.disk.wkBs.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: kB/s
+              description: 'wkB/s The number of kilobytes written to the device per second.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].wkBs.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: e372ead98575458e95c357aa311f51d0
+              name: 'iostat Disk {#DISK} %write rqm'
+              type: DEPENDENT
+              key: 'iostat.disk.wrqm.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: '%'
+              description: '%wrqm  The percentage of write requests merged together before being sent to the device.'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].wrqm.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: c63a00c601514cfbb8f62887b045b3e3
+              name: 'iostat Disk {#DISK} write rqm/s'
+              type: DEPENDENT
+              key: 'iostat.disk.wrqms.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: rqm/s
+              description: 'wrqm/s The number of write requests merged per second that were queued to the device.'
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].wrqms.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: dd962b0023d04548aceea3898aeb735e
+              name: 'iostat Disk {#DISK} writes/s'
+              type: DEPENDENT
+              key: 'iostat.disk.ws.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: w/s
+              description: "w/s\tколичество запросов на запись в секунду"
+              preprocessing:
+                -
+                  type: STR_REPLACE
+                  parameters:
+                    - /
+                    - ''
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].ws.first()'
+              master_item:
+                key: iostat.json
+            -
+              uuid: 5e06686d86754257aae82078bb3af862
+              name: 'iostat Disk {#DISK} write_await'
+              type: DEPENDENT
+              key: 'iostat.disk.w_await.[{#DISK}]'
+              delay: '0'
+              value_type: FLOAT
+              units: ms
+              description: 'среднее время (милисекунды) на обработку запросов записи к диску (включает в себя время, потраченное в очереди на обработку и время на обработку запроса);'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$..[?(@.disk_device== "{#DISK}")].w_await.first()'
+                -
+                  type: TRIM
+                  parameters:
+                    - '[]'
+              master_item:
+                key: iostat.json
+          graph_prototypes:
+            -
+              uuid: 82e1b8a41ac14b89bd295314d7192977
+              name: 'iostat disk {#DISK}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 199C0D
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.util.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: F63100
+                  yaxisside: RIGHT
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.aqu-sz.[{#DISK}]'
+            -
+              uuid: a90e46436eb74fa8b1e34e7de2860898
+              name: 'iostat disk {#DISK} read/write'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 0040FF
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.dkBs.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: 00FF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.rkBs.[{#DISK}]'
+                -
+                  sortorder: '3'
+                  color: FF0000
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.wkBs.[{#DISK}]'
+            -
+              uuid: 7e8db994c67c4556948241314b5b471f
+              name: 'The average time (in milliseconds) for requests issued to the device {#DISK} to be served'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 0040FF
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.d_await.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: FFFF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.f_await.[{#DISK}]'
+                -
+                  sortorder: '3'
+                  color: 00FF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.r_await.[{#DISK}]'
+                -
+                  sortorder: '4'
+                  color: FF0000
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.w_await.[{#DISK}]'
+            -
+              uuid: 73326c5b35cd4b388307b17600961767
+              name: 'The number (after merges) of requests completed per second for the device {#DISK}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 4000FF
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.ds.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: FFFF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.fs.[{#DISK}]'
+                -
+                  sortorder: '3'
+                  color: 00FF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.rs.[{#DISK}]'
+                -
+                  sortorder: '4'
+                  color: FF0000
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.ws.[{#DISK}]'
+            -
+              uuid: 709bd205dd034ef3be77f6cf19efd05e
+              name: 'The number of requests merged per second that were queued to the device {#DISK}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: FF0000
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.drqms.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: 00FF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.rrqms.[{#DISK}]'
+                -
+                  sortorder: '3'
+                  color: 4000FF
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.wrqms.[{#DISK}]'
+            -
+              uuid: e9cc6dd108264e01a79e5ce1a2faa1f2
+              name: 'The percentage of requests merged together before being sent to the device {#DISK}'
+              graph_items:
+                -
+                  sortorder: '1'
+                  color: 0040FF
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.drqm.[{#DISK}]'
+                -
+                  sortorder: '2'
+                  color: 00FF00
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.rrqm.[{#DISK}]'
+                -
+                  sortorder: '3'
+                  color: FF0000
+                  item:
+                    host: 'Template OS Linux iostat JSON'
+                    key: 'iostat.disk.wrqm.[{#DISK}]'
+          master_item:
+            key: iostat.json
+          lld_macro_paths:
+            -
+              lld_macro: '{#DISK}'
+              path: $..disk_device.first()
+          preprocessing:
+            -
+              type: JSONPATH
+              parameters:
+                - '$.sysstat.hosts..statistics..disk.*'
+      tags:
+        -
+          tag: Application
+          value: iostat
